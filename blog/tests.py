@@ -47,7 +47,30 @@ class TestView(TestCase):
         self.assertIn(post_002.title, main_area.text)
         self.assertNotIn('No posts', main_area.text)
         
+    def test_post_detail(self):
         
+        # 1. One post exists
+        post_001 = Post.objects.create(
+            title="First post",
+            content="Hello"
+        )
         
+        self.assertTrue(Post.objects.count(), 1)
         
+        # 2. The post url is '/blog/1/'
+        self.assertEqual(post_001.get_absolute_url(), '/blog/1/')
+        
+        # 3. Return 200 response
+        response = self.client.get('/blog/1/')
+        self.assertEqual(response.status_code, 200)
+        
+        # 4. 'Blog' exists in Navbar
+        soup = BeautifulSoup(response.content, 'html.parser')
+        navbar = soup.nav.text
+        
+        self.assertIn('Blog', navbar)
+        
+        # 5. Main area has a post title
+        main_area = soup.find('div', id='main-area')
+        self.assertIn('First post', main_area.text)
         
