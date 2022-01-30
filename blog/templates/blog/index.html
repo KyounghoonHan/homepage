@@ -90,8 +90,7 @@
                     {% if p.head_image %}
                     <a href="#!"><img class="card-img-top" src="{{ p.head_image.url }}" alt="..." /></a>
                     {% else %}
-                    <a href="#!"><img class="card-img-top" src="https://dummyimage.com/850x350/dee2e6/6c757d.jpg"
-                            alt="..." /></a>
+                    <a href="#!"><img class="card-img-top" src="https://picsum.photos/seed/{{ p.id }}/600/200" alt="..." /></a>
                     {% endif %}
                     <div class="card-body">
                         <h2 class="card-title">{{ p.title }}</h2>
