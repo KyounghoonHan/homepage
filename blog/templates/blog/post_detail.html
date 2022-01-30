@@ -13,6 +13,7 @@
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="{% static 'blog/bootstrap/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'blog/css/blog-post.css' %}" rel="stylesheet" type="text/css">
+    <script src="https://kit.fontawesome.com/5298ee293d.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -52,16 +53,31 @@
                     </header>
                     <!-- Preview image figure-->
                     {% if post.head_image %}
-                    <figure class="mb-4"><img class="img-fluid rounded"
-                        src="{{ post.head_image.url }}" alt="..." /></figure>
+                    <figure class="mb-4"><img class="img-fluid rounded" src="{{ post.head_image.url }}" alt="..." />
+                    </figure>
                     {% else %}
                     <figure class="mb-4"><img class="img-fluid rounded"
-                        src="https://dummyimage.com/900x400/ced4da/6c757d.jpg" alt="..." /></figure>
+                            src="https://picsum.photos/seed/{{ post.id }}/600/200" alt="..." /></figure>
                     {% endif %}
                     <!-- Post content-->
                     <section class="mb-5">
                         {{ post.content }}
                     </section>
+
+                    {% if post.file_upload %}
+                    <a href="{{ post.file_upload.url }}" type="button" class="btn btn-outline-dark" role="button" download>download:
+                        {% if post.get_file_ext == 'xlsx' or post.get_file_ext == 'xls' %}
+                        <i class="far fa-file-excel"></i>
+                        {% elif post.get_file_ext == 'csv' %}
+                        <i class="fas fa-file-csv"></i>
+                        {% else %}
+                        <i class="far fa-file"></i>
+                        {% endif %}
+                        {{ post.get_file_name }}
+                    </a>
+                    {% endif %}
+                    <hr/>
+
                 </article>
                 <!-- Comments section-->
                 <section class="mb-5">
