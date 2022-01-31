@@ -19,7 +19,7 @@
         {% endif %}
         <p class="card-text">{{ p.content | truncatewords:45}}</p>
         <a class="btn btn-primary" href="{{ p.get_absolute_url }}">Read more →</a>
-        <div class="small text-muted">{{ p.created_at }} <a href="#">Author will be placed</a></div>
+        <div class="small text-muted">{{ p.created_at }} <a href="#">{{ p.author | upper }}</a></div>
     </div>
 </div>
 {% endfor %}

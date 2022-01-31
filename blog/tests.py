@@ -1,4 +1,5 @@
 from django.test import TestCase, Client
+from django.contrib.auth.models import User
 from bs4 import BeautifulSoup
 from .models import Post
 
@@ -8,6 +9,14 @@ from .models import Post
 class TestView(TestCase):
     def setUp(self):
         self.client = Client()
+        self.user_trump = User.objects.create_user(
+            username='trump',
+            password='somepassword'
+        )
+        self.user_obama = User.objects.create_user(
+            username='obama',
+            password='somepassword'
+        )
 
     def navbar_test(self, soup):
         """Testing from a function call"""
@@ -47,16 +56,19 @@ class TestView(TestCase):
         # 4. If 2 posts exist
         post_001 = Post.objects.create(
             title='First post',
-            content="Hello world"
+            content="Hello world",
+            author=self.user_trump
         )
 
         post_002 = Post.objects.create(
             title='Second post',
-            content="Hello world"
+            content="Hello world",
+            author=self.user_obama
         )
 
         self.assertEqual(Post.objects.count(), 2)
 
+        # 5. Refresh the site
         new_response = self.client.get('/blog/')
         soup = BeautifulSoup(new_response.content, 'html.parser')
 
@@ -65,13 +77,17 @@ class TestView(TestCase):
         self.assertIn(post_001.title, main_area.text)
         self.assertIn(post_002.title, main_area.text)
         self.assertNotIn('No posts', main_area.text)
+        
+        self.assertIn(post_001.author.username.upper(), main_area.text)
+        self.assertIn(post_002.author.username.upper(), main_area.text)
 
     def test_post_detail(self):
 
         # 1. One post exists
         post_001 = Post.objects.create(
             title="First post",
-            content="Hello"
+            content="Hello",
+            author=self.user_obama
         )
 
         self.assertTrue(Post.objects.count(), 1)
@@ -90,3 +106,6 @@ class TestView(TestCase):
         # 5. Main area has a post title
         main_area = soup.find('div', id='main-area')
         self.assertIn('First post', main_area.text)
+        
+        # 6. Author is placed in main area
+        self.assertIn(self.user_obama.username.upper(), main_area.text)
