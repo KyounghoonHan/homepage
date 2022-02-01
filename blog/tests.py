@@ -1,7 +1,9 @@
+from unicodedata import category
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from bs4 import BeautifulSoup
-from .models import Post
+from pip import main
+from .models import Post, Category
 
 # Create your tests here.
 
@@ -17,7 +19,38 @@ class TestView(TestCase):
             username='obama',
             password='somepassword'
         )
+        
+        self.category_programming = Category.objects.create(
+            name='programming',
+            slug='programming'
+        )
+        
+        self.category_music = Category.objects.create(
+            name='music',
+            slug='music'
+        )
+        
+        # 4. If 2 posts exist
+        self.post_001 = Post.objects.create(
+            title='First post',
+            content="Hello world",
+            author=self.user_trump,
+            category=self.category_programming
+        )
 
+        self.post_002 = Post.objects.create(
+            title='Second post',
+            content="Hello world",
+            author=self.user_obama,
+            category=self.category_music
+        )
+        
+        self.post_003 = Post.objects.create(
+            title='Third post',
+            content="Hello",
+            author=self.user_obama,
+        )
+        
     def navbar_test(self, soup):
         """Testing from a function call"""
         navbar = soup.nav
@@ -36,7 +69,24 @@ class TestView(TestCase):
         about_me_btn = navbar.find('a', text="About me")
         self.assertEqual(about_me_btn.attrs['href'], '/about_me/')
 
-    def test_post_list(self):
+    def category_card_test(self, soup):
+        categories_card = soup.find('div', id='categories-card')
+        self.assertIn('Categories', categories_card.text)
+        
+        self.assertIn(
+            f'{self.category_programming} ({self.category_programming.post_set.count()})',
+            categories_card.text
+        )
+        self.assertIn(
+            f'{self.category_music} ({self.category_music.post_set.count()})',
+            categories_card.text
+        )
+        self.assertIn(
+            f'No category ({Post.objects.filter(category=None).count()})',
+            categories_card.text
+        )
+
+    def test_post_list_with_post(self):
         response = self.client.get('/blog/')
         self.assertEqual(response.status_code, 200)
 
@@ -48,52 +98,50 @@ class TestView(TestCase):
         # 2. 'Blog and About me' are included in Navbar
         self.navbar_test(soup)
         
-        # 3. If no posts
-        self.assertEqual(Post.objects.count(), 0)
-        main_area = soup.find('div', id='main-area')
-        self.assertIn('No posts', main_area.text)
-
-        # 4. If 2 posts exist
-        post_001 = Post.objects.create(
-            title='First post',
-            content="Hello world",
-            author=self.user_trump
-        )
-
-        post_002 = Post.objects.create(
-            title='Second post',
-            content="Hello world",
-            author=self.user_obama
-        )
-
-        self.assertEqual(Post.objects.count(), 2)
-
-        # 5. Refresh the site
-        new_response = self.client.get('/blog/')
-        soup = BeautifulSoup(new_response.content, 'html.parser')
+        # 3. Check category is working well
+        self.category_card_test(soup)
+       
+        # 4. Check 3 posts exist
+        self.assertEqual(Post.objects.count(), 3)
 
         main_area = soup.find('div', id='main-area')
-
-        self.assertIn(post_001.title, main_area.text)
-        self.assertIn(post_002.title, main_area.text)
         self.assertNotIn('No posts', main_area.text)
+
+        post_001_card = main_area.find('div', id='post-1')
+        self.assertIn(self.post_001.title, post_001_card.text)
+        self.assertIn(self.post_001.category.name, post_001_card.text)
         
-        self.assertIn(post_001.author.username.upper(), main_area.text)
-        self.assertIn(post_002.author.username.upper(), main_area.text)
+        post_002_card = main_area.find('div', id='post-2')
+        self.assertIn(self.post_002.title, post_002_card.text)
+        self.assertIn(self.post_002.category.name, post_002_card.text)       
+        
+        post_003_card = main_area.find('div', id='post-3')       
+        self.assertIn(self.post_003.title, post_003_card.text)
+        self.assertIn('No category', post_003_card.text)        
+        
+        self.assertIn(self.post_001.author.username.upper(), main_area.text)
+        self.assertIn(self.post_002.author.username.upper(), main_area.text)
+
+    def test_post_list_without_post(self):
+        Post.objects.all().delete()
+        self.assertEqual(Post.objects.count(), 0)
+        
+        # 3. If no posts
+        res = self.client.get('/blog/')
+        self.assertEqual(res.status_code, 200)        
+
+        soup = BeautifulSoup(res.content, 'html.parser')
+        self.navbar_test(soup)        
+
+        main_area = soup.find('div', id='main-area')
+        self.assertIn('No posts', main_area.text)        
 
     def test_post_detail(self):
 
-        # 1. One post exists
-        post_001 = Post.objects.create(
-            title="First post",
-            content="Hello",
-            author=self.user_obama
-        )
-
-        self.assertTrue(Post.objects.count(), 1)
+        self.assertTrue(Post.objects.count(), 3)
 
         # 2. The post url is '/blog/1/'
-        self.assertEqual(post_001.get_absolute_url(), '/blog/1/')
+        self.assertEqual(self.post_001.get_absolute_url(), '/blog/1/')
 
         # 3. Return 200 response
         response = self.client.get('/blog/1/')
@@ -101,11 +149,11 @@ class TestView(TestCase):
 
         # 4. 'Blog' exists in Navbar
         soup = BeautifulSoup(response.content, 'html.parser')
-        self.navbar_test(soup)
+        self.navbar_test(soup)      
 
         # 5. Main area has a post title
         main_area = soup.find('div', id='main-area')
         self.assertIn('First post', main_area.text)
         
         # 6. Author is placed in main area
-        self.assertIn(self.user_obama.username.upper(), main_area.text)
+        self.assertIn(self.user_trump.username.upper(), main_area.text)
