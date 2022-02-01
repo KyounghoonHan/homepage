@@ -30,12 +30,34 @@ class PostDetail(DetailView):
         
         return context
 
-
+def category_page(request, slug):
+    """ List posts by category"""
+    
+    if slug == 'no_category':
+        category = 'No category'
+        post_list = Post.objects.filter(category=None)
+    else:
+        category = Category.objects.get(slug=slug)
+        post_list = Post.objects.filter(category=category)
+        
+    context = {
+        'post_list': post_list,
+        'categories': Category.objects.all(),
+        'no_category_post_count': Post.objects.filter(category=None).count(),
+        'category': category
+    }
+    
+    return render(
+        request,
+        'blog/index.html',
+        context
+    )
+    
 # def index(request):
     """ PostList(index) by FBV """
 #     posts = Post.objects.all().order_by('-pk')
 #     context = {'posts': posts}
-    
+
 #     return render(
 #         request,
 #         'blog/index.html',
