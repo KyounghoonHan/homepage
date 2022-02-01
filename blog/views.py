@@ -7,12 +7,12 @@ from django.views.generic import ListView, DetailView
 
 
 class PostList(ListView):
-    """ PostList by CBV """
     model = Post
     template_name = 'blog/index.html' # set a template manually
     ordering = '-pk'
     
     def get_context_data(self, **kwargs):
+        """Pass non-default data"""
         context = super(PostList, self).get_context_data()
         context['categories'] = Category.objects.all()
         context['no_category_post_count'] = Post.objects.filter(category=None).count()
@@ -20,8 +20,16 @@ class PostList(ListView):
         return context
     
 class PostDetail(DetailView):
-    """ PostDetail by CBV """
     model = Post
+
+    def get_context_data(self, **kwargs):
+        """Pass non-default data"""
+        context = super(PostDetail, self).get_context_data()
+        context['categories'] = Category.objects.all()
+        context['no_category_post_count'] = Post.objects.filter(category=None).count()
+        
+        return context
+
 
 # def index(request):
     """ PostList(index) by FBV """

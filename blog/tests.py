@@ -149,11 +149,15 @@ class TestView(TestCase):
 
         # 4. 'Blog' exists in Navbar
         soup = BeautifulSoup(response.content, 'html.parser')
-        self.navbar_test(soup)      
+        self.navbar_test(soup)
+        
+        # 3. Check category is working well
+        self.category_card_test(soup)
 
-        # 5. Main area has a post title
-        main_area = soup.find('div', id='main-area')
-        self.assertIn('First post', main_area.text)
+        # 5. Check Post area
+        post_area = soup.find('div', id='post-area')
+        self.assertIn(self.post_001.title, post_area.text)
+        self.assertIn(self.post_001.category.name, post_area.text)
         
         # 6. Author is placed in main area
-        self.assertIn(self.user_trump.username.upper(), main_area.text)
+        self.assertIn(self.user_trump.username.upper(), post_area.text)
