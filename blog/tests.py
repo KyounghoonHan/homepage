@@ -258,3 +258,45 @@ class TestView(TestCase):
         self.assertNotEqual(last_post.author.username, 'trump')
         self.assertEqual(last_post.author.username, 'obama')
         self.assertEqual(last_post.title, 'Test post form')
+        
+    def test_update_post(self):
+        update_post_url = f'/blog/update_post/{self.post_003.pk}/'
+        
+        # Unauthenticated access (without login)
+        response = self.client.get(update_post_url)
+        self.assertEqual(response.status_code, 403)
+        
+        # Unauthenticated access (Not the writer)
+        self.assertNotEqual(self.post_003.author, self.user_trump)
+        self.client.login(username='trump', password='somepassword')
+        response = self.client.get(update_post_url)
+        self.assertEqual(response.status_code, 403)
+        
+        # Authenticated access
+        self.assertEqual(self.post_003.author, self.user_obama)
+        self.client.login(username='obama', password='somepassword')
+        response = self.client.get(update_post_url)
+        self.assertEqual(response.status_code, 200)
+        
+        # Check update page
+        soup = BeautifulSoup(response.content, 'html.parser')
+        self.assertEqual('Edit a post - Blog', soup.title.text)
+        main_area = soup.find('div', id='main-area')
+        self.assertIn('Edit a post', main_area.text)
+        
+        # Check the result of update post
+        update_respose = self.client.post(
+            update_post_url,
+            {
+                'title': 'Updated the 3rd post',
+                'content': 'We are the one',
+                'category': self.category_music.pk
+            },
+            follow=True # This is for following a redirect page
+        )
+        soup = BeautifulSoup(update_respose.content, 'html.parser')
+        main_area = soup.find('div', id='main-area')
+        self.assertIn('Updated the 3rd post', main_area.text)
+        self.assertIn('We are the one', main_area.text)
+        self.assertIn(self.category_music.name, main_area.text)
+        
