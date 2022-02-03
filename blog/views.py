@@ -1,6 +1,6 @@
 from unicodedata import category
 from django.shortcuts import render
-from .models import Post, Category
+from .models import Post, Category, Tag
 
 from django.views.generic import ListView, DetailView
 # Create your views here.
@@ -45,6 +45,24 @@ def category_page(request, slug):
         'categories': Category.objects.all(),
         'no_category_post_count': Post.objects.filter(category=None).count(),
         'category': category
+    }
+    
+    return render(
+        request,
+        'blog/index.html',
+        context
+    )
+    
+def tag_page(request, slug):
+    """ List posts by a tag"""
+    tag = Tag.objects.get(slug=slug)
+    post_list = tag.post_set.all()
+    
+    context = {
+        'post_list': post_list,
+        'categories': Category.objects.all(),
+        'no_category_post_count': Post.objects.filter(category=None).count(),
+        'tag': tag
     }
     
     return render(
