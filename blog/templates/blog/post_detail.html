@@ -9,10 +9,10 @@
 <div class="mb-4" id="post-area">
     <!-- Post title-->
     {% if post.category %}
-    <span class="badge badge-secondary float-right">{{ post.category }}</span>        
+    <span class="badge badge-secondary float-right">{{ post.category }}</span>
     {% else %}
-    <span class="badge badge-secondary float-right">No category</span>        
-    {% endif %}    
+    <span class="badge badge-secondary float-right">No category</span>
+    {% endif %}
     <h1 class="fw-bolder mb-1">{{ post.title }}</h1>
     {% if post.hook_text %}
     <h5 class="text-muted"> {{post.hook_text}} </h5>
@@ -23,22 +23,32 @@
     <!-- Post categories-->
     <a class="badge bg-secondary text-decoration-none link-light" href="#!">Web Design</a>
     <a class="badge bg-secondary text-decoration-none link-light" href="#!">Freebies</a>
-</div>
 
-<!-- Preview image figure-->
-<div class="card mb-4">
-    {% if post.head_image %}
-    <img class="img-fluid rounded" src="{{ post.head_image.url }}" alt="..." />
-    <!-- <a href="#!"><img class="card-img-top" src="{{ post.head_image.url }}" alt="..." /></a> -->
-    {% else %}
-    <img class="img-fluid rounded" src="https://picsum.photos/seed/{{ post.id }}/600/200" alt="..." />
-    <!-- <a href="#!"><img class="card-img-top" src="https://picsum.photos/seed/{{ post.id }}/600/200" alt="..." /></a> -->
+    <!-- Preview image figure-->
+    <div class="card mb-4">
+        {% if post.head_image %}
+        <img class="img-fluid rounded" src="{{ post.head_image.url }}" alt="..." />
+        <!-- <a href="#!"><img class="card-img-top" src="{{ post.head_image.url }}" alt="..." /></a> -->
+        {% else %}
+        <img class="img-fluid rounded" src="https://picsum.photos/seed/{{ post.id }}/600/200" alt="..." />
+        <!-- <a href="#!"><img class="card-img-top" src="https://picsum.photos/seed/{{ post.id }}/600/200" alt="..." /></a> -->
+        {% endif %}
+    </div>
+    <!-- Post content-->
+    <section class="mb-5">
+        {{ post.content }}
+    </section>
+
+    {% if post.tags.exists %}
+    <i class="fas fa-tags"></i>
+    {% for tag in post.tags.iterator %}
+    <a href="{{ tag.get_absolute_url }}"><span class="badge badge-light">{{ tag }}</span></a>
+    {% endfor %}
+    <br />
     {% endif %}
+    <hr />
+
 </div>
-<!-- Post content-->
-<section class="mb-5">
-    {{ post.content }}
-</section>
 
 {% if post.file_upload %}
 <a href="{{ post.file_upload.url }}" type="button" class="btn btn-outline-dark" role="button" download>download:

@@ -186,6 +186,7 @@ class TestView(TestCase):
         post_area = soup.find('div', id='post-area')
         self.assertIn(self.post_001.title, post_area.text)
         self.assertIn(self.post_001.category.name, post_area.text)
+        self.assertIn(self.tag_hello.name, post_area.text)
         
         # 6. Author is placed in main area
         self.assertIn(self.user_trump.username.upper(), post_area.text)
