@@ -11,6 +11,7 @@ from .models import Post, Category, Tag
 class TestView(TestCase):
     def setUp(self):
         self.client = Client()
+        
         self.user_trump = User.objects.create_user(
             username='trump',
             password='somepassword'
@@ -20,6 +21,8 @@ class TestView(TestCase):
             username='obama',
             password='somepassword'
         )
+        self.user_obama.is_staff = True
+        self.user_obama.save()
         
         self.category_programming = Category.objects.create(
             name='programming',
@@ -231,6 +234,10 @@ class TestView(TestCase):
     def test_create_post_with_login(self):
         self.client.login(username='trump', password='somepassword')
         response = self.client.get('/blog/create_post/')
+        self.assertNotEqual(response.status_code, 200) # trump is not a staff
+        
+        self.client.login(username='obama', password='somepassword')
+        response = self.client.get('/blog/create_post/')
         self.assertEqual(response.status_code, 200)
         
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -248,5 +255,6 @@ class TestView(TestCase):
         )
         
         last_post = Post.objects.last()
-        self.assertEqual(last_post.author.username, 'trump')
+        self.assertNotEqual(last_post.author.username, 'trump')
+        self.assertEqual(last_post.author.username, 'obama')
         self.assertEqual(last_post.title, 'Test post form')
