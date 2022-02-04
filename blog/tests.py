@@ -246,11 +246,15 @@ class TestView(TestCase):
         
         self.assertIn('Create a new post', main_area.text)
         
+        tag_str_input = main_area.find('input', id='id_tags_str')
+        self.assertTrue(tag_str_input)
+        
         self.client.post(
             '/blog/create_post/',
             {
                 'title': 'Test post form',
-                'content': "Let's try it"
+                'content': "Let's try it",
+                'tags_str': 'new tag; 한글, python',
             }
         )
         
@@ -258,6 +262,9 @@ class TestView(TestCase):
         self.assertNotEqual(last_post.author.username, 'trump')
         self.assertEqual(last_post.author.username, 'obama')
         self.assertEqual(last_post.title, 'Test post form')
+        
+        self.assertEqual(last_post.tags.count(), 3)
+        self.assertEqual(Tag.objects.count(), 5)
         
     def test_update_post(self):
         update_post_url = f'/blog/update_post/{self.post_003.pk}/'
