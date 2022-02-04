@@ -291,13 +291,18 @@ class TestView(TestCase):
         main_area = soup.find('div', id='main-area')
         self.assertIn('Edit a post', main_area.text)
         
+        tag_str_input = main_area.find('input', id='id_tags_str')
+        self.assertTrue(tag_str_input)
+        self.assertIn('파이썬 공부; python', tag_str_input.attrs['value'])
+        
         # Check the result of update post
         update_respose = self.client.post(
             update_post_url,
             {
                 'title': 'Updated the 3rd post',
                 'content': 'We are the one',
-                'category': self.category_music.pk
+                'category': self.category_music.pk,
+                'tags_str': 'python; 한글, some tag'
             },
             follow=True # This is for following a redirect page
         )
@@ -307,3 +312,7 @@ class TestView(TestCase):
         self.assertIn('We are the one', main_area.text)
         self.assertIn(self.category_music.name, main_area.text)
         
+        self.assertIn('python', main_area.text)
+        self.assertIn('한글', main_area.text)
+        self.assertIn('some tag', main_area.text)
+        self.assertNotIn('파이썬 공부', main_area.text)
