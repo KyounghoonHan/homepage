@@ -38,14 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # installed libraries manually
+    'django_extensions',
+    'crispy_forms',
+    'markdownx',
     
     # installed apps manually
     'blog',
     'single_page',
-    
-    # installed libraries manually
-    'django_extensions',
-    'crispy_forms',
 ]
 
 MIDDLEWARE = [
