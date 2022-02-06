@@ -1,4 +1,5 @@
 {% extends 'blog/base.html' %}
+{% load crispy_forms_tags %}
 
 {% block head_title %}
 {{ post.title }}
@@ -22,8 +23,9 @@
     <hr>
     <!-- Edit button -->
     {% if user.is_authenticated and user == post.author %}
-        <a type="button" href="/blog/update_post/{{ post.pk }}" class="btn btn-primary btn-sm float-right"><i class="fas fa-pen"></i>&nbsp;
-            Edit a post</a>
+    <a type="button" href="/blog/update_post/{{ post.pk }}" class="btn btn-primary btn-sm float-right"><i
+            class="fas fa-pen"></i>&nbsp;
+        Edit a post</a>
     {% endif %}
 
     <div class="text-muted fst-italic mb-2">Post at {{ post.created_at }}</div>
@@ -66,14 +68,38 @@
 {% endif %}
 <hr />
 
-<!-- Comments section-->
-<div class="card bg-light" id="comment-area">
-    <h5 class="card-header">Leave a comment</h5>
-    <div class="card-body">
-        <!-- Comment form-->
-        <form class="mb-4"><textarea class="form-control" rows="3"
-                placeholder="Join the discussion and leave a comment!"></textarea></form>
-        <button type="submit" class="btn btn-primary">Submit</button>
+
+<section class="mb-5">
+    <div class="card bg-light" id="comment-area">
+        <div class="card-body">
+            {% if user.is_authenticated %}
+            <!-- Comment form-->
+            <form class="mb-4" id="comment-form" method="POST" action="{{ post.get_absolute_url }}new_comment/">
+                {% csrf_token %}
+                {{ comment_form | crispy }}
+                <button type="submit" class="btn btn-primary float-right">Submit</button>
+            </form>
+            {% else %}
+            <a role="button" class="btn btn-outline-dark btn-block btn-sm" href="#" data-toggle="modal"
+                data-target="#loginModal">
+                Log in and leave a comment!
+            </a>
+            {% endif %}
+        </div>
+        <!-- Single comment-->
+        {% if post.comment_set.exists %}
+        {% for comment in post.comment_set.iterator %}
+        <div class="d-flex" id="comment-{{ comment.pk }}">
+            <div class="flex-shrink-0 ml-2 mr-2"><img class="rounded-circle" src="https://dummyimage.com/50x50/ced4da/6c757d.jpg"
+                    alt="..." /></div>
+            <div class="ms-3">
+                <div class="fw-bold">{{ comment.author }} &nbsp; <small class="text-muted">{{ comment.created_at }}</small></div>
+                {{ comment.content | linebreaks }}
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
     </div>
-</div>
+</section>
+
 {% endblock %}

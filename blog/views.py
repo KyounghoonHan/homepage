@@ -1,12 +1,14 @@
 from re import template
 from unicodedata import category
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.text import slugify
 from .models import Post, Category, Tag
+from .forms import CommentForm
 
 from django.core.exceptions import PermissionDenied
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
 # Create your views here.
 
 
@@ -32,8 +34,8 @@ class PostDetail(DetailView):
         """Available to pass non-default data"""
         context = super(PostDetail, self).get_context_data()
         context['categories'] = Category.objects.all()
-        context['no_category_post_count'] = Post.objects.filter(
-            category=None).count()
+        context['no_category_post_count'] = Post.objects.filter(category=None).count()
+        context['comment_form'] = CommentForm
 
         return context
 
@@ -159,26 +161,19 @@ def tag_page(request, slug):
         context
     )
 
-# def index(request):
-    """ PostList(index) by FBV """
-#     posts = Post.objects.all().order_by('-pk')
-#     context = {'posts': posts}
-
-#     return render(
-#         request,
-#         'blog/index.html',
-#         context
-#     )
-
-# def single_page_post(request, pk):
-    """ PostDetail(single_page_post) by FBV """
-
-
-#     post = Post.objects.get(pk=pk)
-#     context = {'post': post}
-
-#     return render(
-#         request,
-#         'blog/single_page.html',
-#         context
-#     )
+def new_comment(request, pk):
+    if request.user.is_authenticated:
+        post = get_object_or_404(Post, pk=pk)
+        
+        if request.method == 'POST':
+            comment_form = CommentForm(request.POST)
+            if comment_form.is_valid():
+                comment = comment_form.save(commit=False)
+                comment.post = post
+                comment.author = request.user
+                comment.save()
+                return redirect(comment.get_absolute_url())
+        else:
+            redirect(post.get_absolute_url())
+    else:
+        raise PermissionDenied

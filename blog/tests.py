@@ -3,7 +3,7 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from bs4 import BeautifulSoup
 from pip import main
-from .models import Post, Category, Tag
+from .models import Post, Category, Tag, Comment
 
 # Create your tests here.
 
@@ -70,7 +70,13 @@ class TestView(TestCase):
             author=self.user_obama,
         )
         self.post_003.tags.add(self.tag_python)
-        self.post_003.tags.add(self.tag_python_kor)        
+        self.post_003.tags.add(self.tag_python_kor)
+        
+        self.comment_001 = Comment.objects.create(
+            post=self.post_001,
+            author=self.user_obama,
+            content='First comment'
+        )
         
     def navbar_test(self, soup):
         """Testing from a function call"""
@@ -194,6 +200,58 @@ class TestView(TestCase):
         # 6. Author is placed in main area
         self.assertIn(self.user_trump.username.upper(), post_area.text)
         
+        # 7. Check comments
+        comment_area = soup.find('div', id='comment-area')
+        comment_001_area = comment_area.find('div', id='comment-1')
+        self.assertIn(self.comment_001.author.username, comment_001_area.text)
+        self.assertIn(self.comment_001.content, comment_001_area.text)
+        
+    def test_comment_form(self):
+        self.assertEqual(self.post_001.comment_set.count(), 1)
+        
+        # Without login
+        response = self.client.get(self.post_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        comment_area = soup.find('div', id='comment-area')
+        self.assertIn('Log in and leave a comment!', comment_area.text)
+        self.assertFalse(comment_area.find('form', id='comment-form'))
+        
+        # Logged in case
+        self.client.login(username='obama', password='somepassword')
+        response = self.client.get(self.post_001.get_absolute_url())
+        self.assertEqual(response.status_code, 200)
+        
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        comment_area = soup.find('div', id='comment-area')
+        self.assertNotIn('Log in and leave a comment!', comment_area.text)
+
+        comment_form = comment_area.find('form', id='comment-form')
+        self.assertTrue(comment_form.find('textarea', id='id_content'))
+        response = self.client.post(
+            self.post_001.get_absolute_url() + 'new_comment/',
+            {
+                'content': "obama's comment",
+            },
+            follow=True
+        )
+        
+        self.assertTrue(response.status_code, 200)
+        
+        self.assertEqual(Comment.objects.count(), 2)
+        self.assertEqual(self.post_001.comment_set.count(), 2)
+        
+        new_comment = Comment.objects.last()
+        soup = BeautifulSoup(response.content, 'html.parser')
+        self.assertIn(new_comment.post.title, soup.title.text)
+        
+        comment_area = soup.find('div', id='comment-area')
+        new_comment_div = comment_area.find('div', id=f'comment-{ new_comment.pk }')
+        self.assertIn('obama', new_comment_div.text)
+        self.assertIn("obama's comment", new_comment_div.text)
+        
     def test_category_page(self):
         """Check category urls are working"""
         response = self.client.get(self.category_programming.get_absolute_url())
@@ -316,3 +374,5 @@ class TestView(TestCase):
         self.assertIn('한글', main_area.text)
         self.assertIn('some tag', main_area.text)
         self.assertNotIn('파이썬 공부', main_area.text)
+        
+
