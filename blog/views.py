@@ -12,8 +12,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 class PostList(ListView):
     model = Post
-    template_name = 'blog/index.html'  # set a template manually
+    template_name = 'blog/index.html'  # set a template file manually
     ordering = '-pk'
+    paginate_by = 5
 
     def get_context_data(self, **kwargs):
         """Pass non-default data"""
