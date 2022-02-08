@@ -9,58 +9,78 @@
 </head>
 
 <body>
-    {% include 'blog/navbar.html' %}
+{% include 'blog/navbar.html' %}
 
-    <div class="container">
-        <div class="row my-3">
-            <div class="col-md-8 col-lg-9" id="main-area">
-                {% block main_area %}
-                {% endblock %}
-            </div>
+<div class="container">
+    <div class="row my-3">
+        <div class="col-md-8 col-lg-9" id="main-area">
+            {% block main_area %}
+            {% endblock %}
+        </div>
 
-            <div class="col-md-4 col-lg-3">
-                <!-- Search widget-->
-                <div class="card mb-4">
-                    <div class="card-header">Search</div>
-                    <div class="card-body">
-                        <div class="input-group">
-                            <input class="form-control" type="text" placeholder="Enter search term..."
-                                aria-label="Enter search term..." aria-describedby="button-search" />
-                            <button class="btn btn-primary" id="button-search" type="button">Go!</button>
-                        </div>
+        <div class="col-md-4 col-lg-3">
+            <!-- Search widget-->
+            <div class="card mb-4">
+                <div class="card-header">Search</div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <input id="search-input" class="form-control" type="text" placeholder="Enter search term..."
+                            aria-label="Enter search term..." aria-describedby="button-search" />
+                        <button class="btn btn-primary" id="button-search" type="button"
+                            onclick="searchPost()">Go!</button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Categories widget-->
-                <div class="card mb-4" id="categories-card">
-                    <div class="card-header">Categories</div>
-                    <div class="card-body">
-                        <div class="row">
-                            <ul>
-                                {% for c in categories %}
-                                <li>
-                                    <a href="{{ c.get_absolute_url }}"> {{ c.name }} ({{ c.post_set.count }})</a>
-                                </li>
-                                {% endfor %}
-                                <li>
-                                    <a href="/blog/category/no_category/">No category ({{ no_category_post_count }})</a>
-                                </li>
-                            </ul>
-                        </div>
+            <!-- Categories widget-->
+            <div class="card mb-4" id="categories-card">
+                <div class="card-header">Categories</div>
+                <div class="card-body">
+                    <div class="row">
+                        <ul>
+                            {% for c in categories %}
+                            <li>
+                                <a href="{{ c.get_absolute_url }}"> {{ c.name }} ({{ c.post_set.count }})</a>
+                            </li>
+                            {% endfor %}
+                            <li>
+                                <a href="/blog/category/no_category/">No category ({{ no_category_post_count }})</a>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    {% include 'blog/footer.html'%}
+<script>
+    function searchPost(){
+        let searchValue = document.getElementById('search-input').value.trim();
+        if (searchValue.length > 1){
+            location.href = "/blog/search/" + searchValue + "/";
+        }
+        else {
+            alert("'"+ searchValue + "'" + ' is too short. ' + ' At least 2 characters required.');
+        }
+    };
 
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
-        crossorigin="anonymous"></script>
+    document.getElementById('search-input').addEventListener('keyup', function(event){
+        if(event.key == 'Enter'){
+            searchPost();
+        }
+    });
+
+</script>
+
+{% include 'blog/footer.html'%}
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+    integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
+    crossorigin="anonymous"></script>
 </body>
 
 </html>

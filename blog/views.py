@@ -3,6 +3,8 @@ from django.utils.text import slugify
 from .models import Post, Category, Tag, Comment
 from .forms import CommentForm
 
+from django.db.models import Q
+
 from django.core.exceptions import PermissionDenied
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -129,6 +131,29 @@ class CommentUpdate(LoginRequiredMixin, UpdateView):
         else:
             raise PermissionDenied
 
+
+class PostSearch(PostList):
+    paginated_by = 5
+    
+    def get_queryset(self):
+        """ Class is unable to use arguments from URL like FVB.
+            However, "using self.kwargs" helps utilize arguments in URL.
+        """
+        q = self.kwargs['q']
+        # Q is to utilize a filter with various conditions.
+        post_list = Post.objects.filter(
+            Q(title__contains=q) | Q(tags__name__contains=q)
+        ).distinct().order_by('-pk')
+        
+        return post_list
+    
+    def get_context_data(self, **kwargs):
+        context = super(PostSearch, self).get_context_data()
+        q = self.kwargs['q']
+        context['search_info'] = f'Search: {q}({self.get_queryset().count()})'
+        
+        return context
+        
 
 def category_page(request, slug):
     """ List posts by category"""
