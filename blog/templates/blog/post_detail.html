@@ -90,9 +90,8 @@
         {% if post.comment_set.exists %}
         {% for comment in post.comment_set.iterator %}
         <div id="comment-{{ comment.pk }}">
-            <img class="d-flex mr-3 rounded-circle"
-                    src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" alt="...">
-            <div class="ml-2">
+            <img class="mx-2 rounded-circle float-left" src="{{ comment.get_avatar_url }}" alt="{{ comment.author }}" width="60px">
+            <div class="mt-2">
                 {% if comment.author == user %}
                 <a role="button" class="btn btn-sm btn-danger float-right mr-2" id="comment-{{ comment.pk }}-delete-btn"
                     href="/blog/delete_comment/{{ comment.pk }}/" data-toggle="modal"
@@ -127,8 +126,9 @@
                     </div>
                 </div>
                 {% endif %}
-                <div class="fw-bold">{{ comment.author }} &nbsp; <small class="text-muted">
-                    {{ comment.created_at }}</small></div>
+                <div class="fw-bold">{{ comment.author }} &nbsp; 
+                    <small class="text-muted">{{ comment.created_at }}</small>
+                </div>
                 {{ comment.content | linebreaks }}
                 {% if comment.is_updated %}
                 <small class="text-muted float-right mr-2">Updated: {{ comment.updated_at }}</small>
