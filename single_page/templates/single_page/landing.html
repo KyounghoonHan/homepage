@@ -1,16 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+{% load static %}
+<html lang="ko">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Landing</title>
+    <title>Landing page</title>
+    <link href="{% static 'blog/bootstrap/bootstrap.min.css' %}" rel="stylesheet" type="text/css">
+    <script src="https://kit.fontawesome.com/5298ee293d.js" crossorigin="anonymous"></script>
+
+    <link href="{% static 'single_page/css/landing.css' %}" rel="stylesheet" type="text/css">
 </head>
+
 <body>
-    <nav>
-        <a href="/blog/">Blog</a>
-        <a href="/about_me/">About me</a>
-    </nav>
-    <h1>Not ready. Coming Soon!</h1>
+    {% include 'blog/navbar.html' %}
+    <section>
+        <div class="container">
+            <div class="row justify-flex-between">
+                <div class="col-lg-6 mt-3">
+                    <h1><span class="badge badge-secondary">TCY is for you.</span></h1>
+                </div>
+                <div class="col-lg-6 mt-3">
+                    <h1><span class="badge badge-secondary">Blog - Recent posts</span></h1>
+                    {% for post in recent_posts %}
+                    <div class="card mt-1">
+                        <div class="card-body">
+                            <h6><a href="{{ post.get_absolute_url }}" class="text-decoration-none text-dark">
+                                {{ post.title }}
+                            </a></h6>
+                            <span class="float-right badge badge-pill badge-light">
+                                <img width="20px" class="mr-1 rounded-circle" src="{{ post.get_avatar_url }}" alt="{{ post.author }}">
+                                <!-- <img width="20px" src="https://doitdjango.com/avatar/id/143/e3445497d896a175/svg/{{ user.email }}"> -->
+                                {{ post.author }}
+                                &nbsp;&nbsp;
+                                {{ post.created_at }}    
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="fixed-bottom">
+        {% include 'blog/footer.html'%}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF"
+        crossorigin="anonymous"></script>
 </body>
+
 </html>
