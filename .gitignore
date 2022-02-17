@@ -135,3 +135,7 @@ migrations/
 
 # media files
 _media/
+
+# production files
+.env.prod
+.env.prod.db
